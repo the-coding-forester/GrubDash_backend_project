@@ -100,7 +100,7 @@ const dishExists = (req, res, next) => {
   }
   next({
     status: 404,
-    message: `Dish with id ${id} does not exist.`,
+    message: `Dish with id ${dishId} does not exist.`,
   });
 }
 
