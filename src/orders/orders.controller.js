@@ -118,6 +118,86 @@ const dishQuantityIsInteger = (req, res, next) => {
   next();
 }
 
+//checks if order exists
+const orderExists = (req, res, next) => {
+  const { orderId } = req.params;
+  const desiredOrder = orders.find((order) => orderId === order.id);
+
+  if (desiredOrder) {
+    req.orderId = orderId;
+    req.order = desiredOrder;
+    return next();
+  }
+  next({
+    status: 404,
+    message: `Order with id ${orderId} does not exist.`,
+  });
+}
+
+//checks if body id matches order route id
+const bodyIdMatchesOrderId = (req, res, next) => {
+  const { data: { id } = {} } = req.body;
+  const { orderId } = req.params;
+
+  if (id) {
+    if (orderId === id) {
+      req.id = id;
+      return next();
+    }
+    next({
+      status: 400,
+      message: `Order id does not match route id. Order: ${id}, Route: ${orderId}`,
+    });
+  }
+  next();
+}
+
+//check if body status property is missing
+const bodyHasStatusProperty = (req, res, next) => {
+  const { data: { status } = {} } = req.body;
+  const statusMessages = [
+    'pending',
+    'preparing',
+    'out-for-delivery',
+    'delivered',
+  ];
+
+  if (status) {
+    req.status = status;
+    return next();
+  }
+  next({
+    status: 400,
+    message: `Order must have a status of ${statusMessages}.`,
+  });
+}
+
+//check if status is valid
+const statusIsValid = (req, res, next) => {
+  const { data: { status } = {} } = req.body;
+
+  if (status === "pending" || status === "preparing" || status === "out-for-delivery" || status === "delivered") {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Order must have a status of pending, preparing, out-for-delivery, delivered'
+  });
+}
+
+//check if order is in the pending status
+const statusIsPending = (req, res, next) => {
+
+  if (req.order.status === 'pending') {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'An order cannot be deleted unless it is pending'
+  })
+}
+
+
 //HANDLER MIDDLEWARE
 
 //GET /orders
@@ -139,6 +219,38 @@ const create = (req, res) => {
   res.status(201).json({ data: newOrder });
 }
 
+//GET /orders/:orderId
+const read = (req, res) => {
+  res.status(200).json({ data: req.order });
+}
+
+//PUT /orders/:orderId
+function update(req, res) {
+  const desiredOrder = req.order;
+
+  if (desiredOrder.deliverTo !== req.deliverTo) {
+    desiredOrder.deliverTo = req.deliverTo;
+  }
+  if (desiredOrder.mobileNumber !== req.mobileNumber) {
+    desiredOrder.mobileNumber = req.mobileNumber;
+  }
+  if (desiredOrder.status !== req.status) {
+    desiredOrder.status = req.status;
+  }
+  if (desiredOrder.dishes !== req.dishes) {
+    desiredOrder.dishes = req.dishes;
+  }
+  res.status(200).json({ data: desiredOrder });
+}
+
+//DELETE /orders/:orderId
+const remove = (req, res) => {
+  const index = orders.findIndex((order) => order.id === req.orderId);
+
+  orders.splice(index, 1);
+  res.sendStatus(204)
+}
+
 module.exports = {
   list,
   create: [
@@ -152,4 +264,25 @@ module.exports = {
     dishQuantityIsInteger,
     create
   ],
-}
+  read: [orderExists, read],
+  update: [
+    orderExists,
+    bodyIdMatchesOrderId,
+    bodyHasDeliverTo,
+    bodyHasMobileNumber,
+    bodyHasDishes,
+    dishesPropertyIsArray,
+    dishesArrayIsNotEmpty,
+    dishHasQuantityProperty,
+    dishQuantityIsGreaterThanZero,
+    dishQuantityIsInteger,
+    bodyHasStatusProperty,
+    statusIsValid,
+    update
+  ],
+  remove: [
+    orderExists,
+    statusIsPending,
+    remove
+  ]
+};
