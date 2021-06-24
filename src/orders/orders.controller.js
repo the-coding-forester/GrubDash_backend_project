@@ -25,7 +25,7 @@ const bodyHasMobileNumber = (req, res, next) => {
 
   if (mobileNumber) {
     req.mobileNumber = mobileNumber;
-    next();
+    return next();
   }
   next({
     status: 400,
@@ -39,11 +39,24 @@ const bodyHasDishes = (req, res, next) => {
 
   if (dishes) {
     req.dishes = dishes;
-    next();
+    return next();
   }
   next({
     status: 400,
     message: 'Order must include a dish.'
+  });
+}
+
+//checks if the dishes property is an array
+const dishesPropertyIsArray = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  if (Array.isArray(dishes)) {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Order must include at least one dish.',
   });
 }
 
@@ -74,6 +87,7 @@ module.exports = {
     bodyHasDeliverTo,
     bodyHasMobileNumber,
     bodyHasDishes,
+    dishesPropertyIsArray,
     create
   ],
 }
