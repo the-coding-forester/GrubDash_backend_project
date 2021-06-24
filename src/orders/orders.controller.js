@@ -19,6 +19,20 @@ const bodyHasDeliverTo = (req, res, next) => {
   })
 }
 
+//check if the mobileNumber property is missing
+const bodyHasMobileNumber = (req, res, next) => {
+  const { data: { mobileNumber } = {} } = req.body;
+
+  if (mobileNumber) {
+    req.mobileNumber = mobileNumber;
+    next();
+  }
+  next({
+    status: 400,
+    message: 'Order must include a mobileNumber property.'
+  })
+}
+
 //HANDLER MIDDLEWARE
 
 //GET /orders
@@ -42,5 +56,9 @@ const create = (req, res) => {
 
 module.exports = {
   list,
-  create: [bodyHasDeliverTo, create],
+  create: [
+    bodyHasDeliverTo,
+    bodyHasMobileNumber,
+    create
+  ],
 }
