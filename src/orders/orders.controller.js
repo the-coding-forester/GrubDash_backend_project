@@ -73,6 +73,51 @@ const dishesArrayIsNotEmpty = (req, res, next) => {
   });
 }
 
+//check if the dish quantity property is missing
+const dishHasQuantityProperty = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  dishes.forEach((dish, index) => {
+    if (!dish.quantity) {
+      return next({
+        status: 400,
+        message: `Dish ${index} must have a quantity that is an integer greater than 0`
+      });
+    }
+  });
+  next();
+}
+
+//check if dish quantity is greater than zero
+const dishQuantityIsGreaterThanZero = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  dishes.forEach((dish, index) => {
+    if (dish.quantity < 1) {
+      return next({
+        status: 400,
+        message: `Dish ${index} must have a quantity that is an integer greater than 0`
+      });
+    };
+  })
+  next();
+}
+
+//check if dish quantity is an integer
+const dishQuantityIsInteger = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  dishes.forEach((dish, index) => {
+    if (!Number.isInteger(dish.quantity)) {
+      return next({
+        status: 400,
+        message: `Dish ${index} must have a quantity that is an integer greater than 0`
+      });
+    }
+  });
+  next();
+}
+
 //HANDLER MIDDLEWARE
 
 //GET /orders
@@ -102,6 +147,9 @@ module.exports = {
     bodyHasDishes,
     dishesPropertyIsArray,
     dishesArrayIsNotEmpty,
+    dishHasQuantityProperty,
+    dishQuantityIsGreaterThanZero,
+    dishQuantityIsInteger,
     create
   ],
 }
