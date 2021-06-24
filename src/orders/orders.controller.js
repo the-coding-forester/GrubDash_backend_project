@@ -60,6 +60,19 @@ const dishesPropertyIsArray = (req, res, next) => {
   });
 }
 
+//check if the dishes array is not empty
+const dishesArrayIsNotEmpty = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  if (dishes.length > 0) {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Order must include at least one dish.'
+  });
+}
+
 //HANDLER MIDDLEWARE
 
 //GET /orders
@@ -88,6 +101,7 @@ module.exports = {
     bodyHasMobileNumber,
     bodyHasDishes,
     dishesPropertyIsArray,
+    dishesArrayIsNotEmpty,
     create
   ],
 }
