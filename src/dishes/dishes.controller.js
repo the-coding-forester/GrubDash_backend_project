@@ -6,6 +6,7 @@ const nextId = require("../utils/nextId");
 
 //VALIDATION
 
+//check that the name property exists
 const bodyHasName = (req, res, next) => {
   const { data: { name } = {} } = req.body;
 
@@ -19,6 +20,7 @@ const bodyHasName = (req, res, next) => {
   });
 }
 
+//checks that the description property exists
 const bodyHasDescription = (req, res, next) => {
   const { data: { description } = {} } = req.body;
 
@@ -29,6 +31,46 @@ const bodyHasDescription = (req, res, next) => {
   next({
     status: 400,
     message: 'Dish must include a description.',
+  });
+}
+
+//checks that the price property exists
+const bodyHasPrice = (req, res, next) => {
+  const { data: { price } = {} } = req.body;
+
+  if (price) {
+    req.price = price;
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Dish must include a price',
+  });
+}
+
+//check that the price property is an integer
+const priceIsAnInteger = (req, res, next) => {
+  const { data: { price } = {} } = req.body;
+
+  if (Number.isInteger(price)) {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Dish must have a price that is a number/integer.',
+  });
+}
+
+//checks that the price property is greater than 0
+const priceIsGreaterThanZero = (req, res, next) => {
+  const { data: { price } = {} } = req.body;
+
+  if (price > 0) {
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Dish must have a price that is greater than 0.',
   });
 }
 
@@ -56,5 +98,11 @@ const create = (req, res, next) => {
 
 module.exports = {
   list,
-  create: [bodyHasName, bodyHasDescription]
+  create: [
+    bodyHasName,
+    bodyHasDescription,
+    bodyHasPrice,
+    priceIsAnInteger,
+    priceIsGreaterThanZero,
+  ],
 }
