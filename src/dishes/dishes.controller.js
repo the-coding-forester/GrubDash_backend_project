@@ -1,3 +1,4 @@
+const { response } = require("express");
 const path = require("path");
 
 const dishes = require(path.resolve("src/data/dishes-data"));
@@ -87,6 +88,39 @@ const bodyHasImageUrl = (req, res, next) => {
   });
 }
 
+//checks if dish exists
+const dishExists = (req, res, next) => {
+  const { dishId } = req.params;
+  const desiredDish = dishes.find((dish) => dishId === dish.id);
+
+  if (desiredDish) {
+    req.dishId = dishId;
+    req.dish = desiredDish;
+    return next();
+  }
+  next({
+    status: 404,
+    message: `Dish with id ${id} does not exist.`,
+  });
+}
+
+//checks if body id matches dish route id
+const bodyIdMatchesDishId = (req, res, next) => {
+  const { data: { id } = {} } = req.body;
+  const { dishId } = req.params;
+
+  if (id) {
+    if (dishId === id) {
+      req.id = id;
+      return next();
+    }
+    next({
+      status: 400,
+      message: `Dish id does not match route id. Dish: ${id}, Route: ${dishId}`,
+    });
+  }
+  next();
+}
 
 //Handler Middleware
 //GET /dishes
@@ -107,6 +141,10 @@ const create = (req, res) => {
   res.status(201).json({ data: newDish })
 }
 
+//GET /dishes/:dishId
+const read = (req, res) => {
+  res.status(200).json({ data: req.dish });
+}
 
 
 module.exports = {
@@ -118,6 +156,21 @@ module.exports = {
     priceIsAnInteger,
     priceIsGreaterThanZero,
     bodyHasImageUrl,
-    create,
+    create
   ],
+  read: [
+    dishExists,
+    read
+  ],
+  update: [
+    dishExists,
+    bodyIdMatchesDishId,
+    bodyHasName,
+    bodyHasDescription,
+    bodyHasPrice,
+    priceIsAnInteger,
+    priceIsGreaterThanZero,
+    bodyHasImageUrl,
+    update
+  ]
 };
