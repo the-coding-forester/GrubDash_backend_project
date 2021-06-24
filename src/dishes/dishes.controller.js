@@ -1,10 +1,9 @@
-const { response } = require("express");
 const path = require("path");
 
 const dishes = require(path.resolve("src/data/dishes-data"));
 const nextId = require("../utils/nextId");
 
-//VALIDATION
+//VALIDATION Middleware
 
 //check that the name property exists
 const bodyHasName = (req, res, next) => {
@@ -74,24 +73,38 @@ const priceIsGreaterThanZero = (req, res, next) => {
   });
 }
 
+//checks if the image_url property exists
+const bodyHasImageUrl = (req, res, next) => {
+  const { data: { image_url } = {} } = req.body;
 
-//Routes
+  if (image_url) {
+    req.image_url = image_url;
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Dish must have an image_url.'
+  });
+}
+
+
+//Handler Middleware
 //GET /dishes
-const list = (req, res, next) => {
+const list = (req, res) => {
   res.status(200).json({ data: dishes })
 }
 
 //POST /dishes
-const create = (req, res, next) => {
+const create = (req, res) => {
   const newDish = {
-    'id': req.id,
+    'id': nextId(),
     'name': req.name,
     'description': req.description,
     'price': req.price,
     'image_url': req.image_url
-  }
+  };
   dishes.push(newDish)
-  response.status(201).json({ data: newDish })
+  res.status(201).json({ data: newDish })
 }
 
 
@@ -104,5 +117,7 @@ module.exports = {
     bodyHasPrice,
     priceIsAnInteger,
     priceIsGreaterThanZero,
+    bodyHasImageUrl,
+    create,
   ],
-}
+};
