@@ -15,7 +15,7 @@ const bodyHasDeliverTo = (req, res, next) => {
   }
   next({
     status: 400,
-    message: 'Order must have a deliverTo property.'
+    message: 'Order must include a deliverTo.'
   })
 }
 
@@ -29,8 +29,22 @@ const bodyHasMobileNumber = (req, res, next) => {
   }
   next({
     status: 400,
-    message: 'Order must include a mobileNumber property.'
-  })
+    message: 'Order must include a mobileNumber.'
+  });
+}
+
+//check if the dishes property is missing
+const bodyHasDishes = (req, res, next) => {
+  const { data: { dishes } = {} } = req.body;
+
+  if (dishes) {
+    req.dishes = dishes;
+    next();
+  }
+  next({
+    status: 400,
+    message: 'Order must include a dish.'
+  });
 }
 
 //HANDLER MIDDLEWARE
@@ -59,6 +73,7 @@ module.exports = {
   create: [
     bodyHasDeliverTo,
     bodyHasMobileNumber,
+    bodyHasDishes,
     create
   ],
 }
