@@ -6,7 +6,7 @@ const nextId = require("../utils/nextId");
 
 //VALIDATION
 
-const bodyHasNameProp = (req, res, next) => {
+const bodyHasName = (req, res, next) => {
   const { data: { name } = {} } = req.body;
 
   if (name) {
@@ -15,7 +15,20 @@ const bodyHasNameProp = (req, res, next) => {
   }
   next({
     status: 400,
-    message: 'Dish must include a name'
+    message: 'Dish must include a name.',
+  });
+}
+
+const bodyHasDescription = (req, res, next) => {
+  const { data: { description } = {} } = req.body;
+
+  if (description) {
+    req.description = description;
+    return next();
+  }
+  next({
+    status: 400,
+    message: 'Dish must include a description.',
   });
 }
 
@@ -43,5 +56,5 @@ const create = (req, res, next) => {
 
 module.exports = {
   list,
-  create: [bodyHasNameProp]
+  create: [bodyHasName, bodyHasDescription]
 }
