@@ -146,6 +146,24 @@ const read = (req, res) => {
   res.status(200).json({ data: req.dish });
 }
 
+//PUT /dishes/:dishId
+const update = (req, res) => {
+  const desiredDish = req.dish;
+
+  if (desiredDish.name !== req.name) {
+    desiredDish.name = req.name;
+  }
+  if (desiredDish.description !== req.description) {
+    desiredDish.description = req.description;
+  }
+  if (desiredDish.price !== req.price) {
+    desiredDish.price = req.price;
+  }
+  if (desiredDish.image_url !== req.image_url) {
+    desiredDish.image_url = req.image_url;
+  }
+  res.status(200).json({ data: desiredDish });
+}
 
 module.exports = {
   list,
@@ -172,5 +190,5 @@ module.exports = {
     priceIsGreaterThanZero,
     bodyHasImageUrl,
     update
-  ]
+  ],
 };
