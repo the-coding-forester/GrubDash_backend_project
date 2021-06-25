@@ -10,13 +10,13 @@ const bodyHasDeliverTo = (req, res, next) => {
   const { data: { deliverTo } = {} } = req.body;
 
   if (deliverTo) {
-    req.deliverTo = deliverTo;
+    res.locals.deliverTo = deliverTo;
     return next();
   }
   next({
     status: 400,
     message: 'Order must include a deliverTo.'
-  })
+  });
 }
 
 //check if the mobileNumber property is missing
@@ -24,7 +24,7 @@ const bodyHasMobileNumber = (req, res, next) => {
   const { data: { mobileNumber } = {} } = req.body;
 
   if (mobileNumber) {
-    req.mobileNumber = mobileNumber;
+    res.locals.mobileNumber = mobileNumber;
     return next();
   }
   next({
@@ -38,7 +38,7 @@ const bodyHasDishes = (req, res, next) => {
   const { data: { dishes } = {} } = req.body;
 
   if (dishes) {
-    req.dishes = dishes;
+    res.locals.dishes = dishes;
     return next();
   }
   next({
@@ -124,8 +124,8 @@ const orderExists = (req, res, next) => {
   const desiredOrder = orders.find((order) => orderId === order.id);
 
   if (desiredOrder) {
-    req.orderId = orderId;
-    req.order = desiredOrder;
+    res.locals.orderId = orderId;
+    res.locals.order = desiredOrder;
     return next();
   }
   next({
@@ -141,7 +141,7 @@ const bodyIdMatchesOrderId = (req, res, next) => {
 
   if (id) {
     if (orderId === id) {
-      req.id = id;
+      res.locals.id = id;
       return next();
     }
     next({
@@ -163,7 +163,7 @@ const bodyHasStatusProperty = (req, res, next) => {
   ];
 
   if (status) {
-    req.status = status;
+    res.locals.status = status;
     return next();
   }
   next({
@@ -188,7 +188,7 @@ const statusIsValid = (req, res, next) => {
 //check if order is in the pending status
 const statusIsPending = (req, res, next) => {
 
-  if (req.order.status === 'pending') {
+  if (res.locals.order.status === 'pending') {
     return next();
   }
   next({
@@ -209,10 +209,10 @@ const list = (req, res) => {
 const create = (req, res) => {
   const newOrder = {
     id: nextId(),
-    deliverTo: req.deliverTo,
-    mobileNumber: req.mobileNumber,
-    status: req.status,
-    dishes: req.dishes,
+    deliverTo: res.locals.deliverTo,
+    mobileNumber: res.locals.mobileNumber,
+    status: res.locals.status,
+    dishes: res.locals.dishes,
   };
 
   orders.push(newOrder);
@@ -221,31 +221,31 @@ const create = (req, res) => {
 
 //GET /orders/:orderId
 const read = (req, res) => {
-  res.status(200).json({ data: req.order });
+  res.status(200).json({ data: res.locals.order });
 }
 
 //PUT /orders/:orderId
 function update(req, res) {
-  const desiredOrder = req.order;
+  const desiredOrder = res.locals.order;
 
-  if (desiredOrder.deliverTo !== req.deliverTo) {
-    desiredOrder.deliverTo = req.deliverTo;
+  if (desiredOrder.deliverTo !== res.locals.deliverTo) {
+    desiredOrder.deliverTo = res.locals.deliverTo;
   }
-  if (desiredOrder.mobileNumber !== req.mobileNumber) {
-    desiredOrder.mobileNumber = req.mobileNumber;
+  if (desiredOrder.mobileNumber !== res.locals.mobileNumber) {
+    desiredOrder.mobileNumber = res.locals.mobileNumber;
   }
-  if (desiredOrder.status !== req.status) {
-    desiredOrder.status = req.status;
+  if (desiredOrder.status !== res.locals.status) {
+    desiredOrder.status = res.locals.status;
   }
-  if (desiredOrder.dishes !== req.dishes) {
-    desiredOrder.dishes = req.dishes;
+  if (desiredOrder.dishes !== res.locals.dishes) {
+    desiredOrder.dishes = res.locals.dishes;
   }
   res.status(200).json({ data: desiredOrder });
 }
 
 //DELETE /orders/:orderId
 const remove = (req, res) => {
-  const index = orders.findIndex((order) => order.id === req.orderId);
+  const index = orders.findIndex((order) => order.id === res.locals.orderId);
 
   orders.splice(index, 1);
   res.sendStatus(204)

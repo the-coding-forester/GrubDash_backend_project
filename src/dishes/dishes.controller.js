@@ -1,4 +1,3 @@
-const { response } = require("express");
 const path = require("path");
 
 const dishes = require(path.resolve("src/data/dishes-data"));
@@ -11,7 +10,7 @@ const bodyHasName = (req, res, next) => {
   const { data: { name } = {} } = req.body;
 
   if (name) {
-    req.name = name;
+    res.locals.name = name;
     return next();
   }
   next({
@@ -25,7 +24,7 @@ const bodyHasDescription = (req, res, next) => {
   const { data: { description } = {} } = req.body;
 
   if (description) {
-    req.description = description;
+    res.locals.description = description;
     return next();
   }
   next({
@@ -39,7 +38,7 @@ const bodyHasPrice = (req, res, next) => {
   const { data: { price } = {} } = req.body;
 
   if (price) {
-    req.price = price;
+    res.locals.price = price;
     return next();
   }
   next({
@@ -79,7 +78,7 @@ const bodyHasImageUrl = (req, res, next) => {
   const { data: { image_url } = {} } = req.body;
 
   if (image_url) {
-    req.image_url = image_url;
+    res.locals.image_url = image_url;
     return next();
   }
   next({
@@ -94,8 +93,8 @@ const dishExists = (req, res, next) => {
   const desiredDish = dishes.find((dish) => dishId === dish.id);
 
   if (desiredDish) {
-    req.dishId = dishId;
-    req.dish = desiredDish;
+    res.locals.dishId = dishId;
+    res.locals.dish = desiredDish;
     return next();
   }
   next({
@@ -111,7 +110,7 @@ const bodyIdMatchesDishId = (req, res, next) => {
 
   if (id) {
     if (dishId === id) {
-      req.id = id;
+      res.locals.id = id;
       return next();
     }
     next({
@@ -132,35 +131,36 @@ const list = (req, res) => {
 const create = (req, res) => {
   const newDish = {
     'id': nextId(),
-    'name': req.name,
-    'description': req.description,
-    'price': req.price,
-    'image_url': req.image_url
+    'name': res.locals.name,
+    'description': res.locals.description,
+    'price': res.locals.price,
+    'image_url': res.locals.image_url
   };
+
   dishes.push(newDish)
   res.status(201).json({ data: newDish })
 }
 
 //GET /dishes/:dishId
 const read = (req, res) => {
-  res.status(200).json({ data: req.dish });
+  res.status(200).json({ data: res.locals.dish });
 }
 
 //PUT /dishes/:dishId
 const update = (req, res) => {
-  const desiredDish = req.dish;
+  const desiredDish = res.locals.dish;
 
-  if (desiredDish.name !== req.name) {
-    desiredDish.name = req.name;
+  if (desiredDish.name !== res.locals.name) {
+    desiredDish.name = res.locals.name;
   }
-  if (desiredDish.description !== req.description) {
-    desiredDish.description = req.description;
+  if (desiredDish.description !== res.locals.description) {
+    desiredDish.description = res.locals.description;
   }
-  if (desiredDish.price !== req.price) {
-    desiredDish.price = req.price;
+  if (desiredDish.price !== res.locals.price) {
+    desiredDish.price = res.locals.price;
   }
-  if (desiredDish.image_url !== req.image_url) {
-    desiredDish.image_url = req.image_url;
+  if (desiredDish.image_url !== res.locals.image_url) {
+    desiredDish.image_url = res.locals.image_url;
   }
   res.status(200).json({ data: desiredDish });
 }
